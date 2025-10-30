@@ -38,12 +38,6 @@ st.markdown("""
         text-align: center;
         padding: 10px;
     }
-    .species-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin: 10px 0;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -52,8 +46,11 @@ def main():
 
     # Download dataset on first run
     if 'dataset_downloaded' not in st.session_state:
-        dataset_manager.download_dataset()
-        st.session_state.dataset_downloaded = True
+        with st.spinner("Setting up dataset..."):
+            success = dataset_manager.download_dataset()
+            if success:
+                st.session_state.dataset_downloaded = True
+                st.rerun()
 
     # Load dataset information
     dataset_info = dataset_manager.get_dataset_info()
@@ -68,13 +65,14 @@ def main():
             <h2>Welcome to Bird Prediction AI</h2>
             <p>Discover, identify, and explore the fascinating world of birds through artificial intelligence!</p>
             <p><strong>Powered by Kaggle Dataset:</strong> {dataset_info['name']}</p>
+            <p><strong>Dataset Source:</strong> Birds of Uganda</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.subheader("What You Can Do:")
         
         features = [
-            "Upload bird photos for instant identification using Kaggle dataset",
+            "Upload bird photos for instant identification using real dataset",
             "Get accurate bird species predictions with AI",
             "Create beautiful videos of your identified birds", 
             "Learn about bird characteristics and habitats"
@@ -87,35 +85,31 @@ def main():
         # Display sample bird image
         if sample_images:
             try:
-                bird_image = Image.open(sample_images[0])
-                st.image(bird_image, caption="Sample from Kaggle Dataset", width=250)
-            except:
-                st.markdown("""
-                <div class="image-container">
-                    <h3>Bird Identification</h3>
-                    <p>AI-Powered Species Recognition</p>
-                </div>
-                """, unsafe_allow_html=True)
+                bird_image = Image.open(sample_images[0]['path'])
+                st.image(bird_image, caption=f"Sample: {sample_images[0]['species']}", width=250)
+            except Exception as e:
+                st.info("🖼️ Bird images will be displayed here")
         else:
-            st.info("Downloading dataset images...")
+            st.info("📥 Downloading dataset images...")
         
         st.info("**Ready to explore?**\n\nClick the 'Bird Predictor' button!")
 
     # Sample Images from Dataset
     st.markdown("---")
-    st.subheader("Sample Images from Kaggle Dataset")
+    st.subheader("Sample Images from BirdsUG Dataset")
     
     if sample_images:
         cols = st.columns(4)
-        for i, img_path in enumerate(sample_images[:4]):
+        for i, img_info in enumerate(sample_images[:4]):
             with cols[i]:
                 try:
-                    img = Image.open(img_path)
+                    img = Image.open(img_info['path'])
                     st.image(img, use_column_width=True)
+                    st.caption(img_info['species'])
                 except:
                     st.write(f"Image {i+1}")
     else:
-        st.info("No sample images available yet. Dataset is downloading...")
+        st.info("Loading sample images from dataset...")
 
     # Kaggle Dataset Information Section
     st.markdown("---")
@@ -129,6 +123,7 @@ def main():
             <h3>Dataset: {dataset_info['name']}</h3>
             <p><strong>Description:</strong> {dataset_info['description']}</p>
             <p><strong>Creator:</strong> {dataset_info['creator']}</p>
+            <p><strong>Location:</strong> Uganda Bird Species</p>
             <p><strong>Dataset URL:</strong> <a href="{dataset_info['url']}" target="_blank">View on Kaggle</a></p>
         </div>
         """, unsafe_allow_html=True)
@@ -170,13 +165,13 @@ def main():
 
     # Footer
     st.markdown("---")
-    st.caption("Bird Prediction AI • Powered by Kaggle Dataset & Streamlit")
+    st.caption("Bird Prediction AI • Powered by BirdsUG Dataset & Streamlit")
 
 # Sidebar navigation
 st.sidebar.title("Navigation")
 
 # Display dataset status in sidebar
-if os.path.exists(dataset_manager.images_dir):
+if os.path.exists(dataset_manager.dataset_path):
     st.sidebar.success("✅ Dataset Ready")
 else:
     st.sidebar.warning("📥 Downloading Dataset...")
@@ -193,9 +188,6 @@ st.sidebar.subheader("Dataset Management")
 if st.sidebar.button("Refresh Dataset", use_container_width=True):
     dataset_manager.download_dataset()
     st.rerun()
-
-if st.sidebar.button("View Dataset Info", use_container_width=True):
-    st.sidebar.info(f"Dataset: {dataset_manager.dataset_url}")
 
 st.sidebar.markdown("---")
 st.sidebar.info("Tip: Clear images work best for accurate identification!")
