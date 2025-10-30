@@ -1,9 +1,13 @@
 import streamlit as st
 import time
 import random
-import os
 from PIL import Image
-import io
+
+st.set_page_config(
+    page_title="Bird Predictor - Bird AI",
+    page_icon="🦜",
+    layout="wide"
+)
 
 st.title("🦜 Bird Species Predictor")
 st.write("Upload bird images and generate prediction videos")
@@ -113,13 +117,13 @@ if uploaded_file is not None:
             st.markdown("---")
             st.subheader("🎬 Your Bird Prediction Video")
             
-            # Mock video player (in real app, this would be an actual video file)
-            st.video("https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4")
+            # Mock video player
+            st.info("🎥 Video would be displayed here in a real application")
             
             # Download button (mock)
             st.download_button(
                 label="📥 Download Video",
-                data=b"mock_video_data",  # In real app, this would be actual video data
+                data=b"mock_video_data",
                 file_name=f"bird_prediction_{predicted_bird.replace(' ', '_')}.mp4",
                 mime="video/mp4"
             )
@@ -132,24 +136,8 @@ if uploaded_file is not None:
 else:
     # Instructions when no file is uploaded
     st.info("👆 Please upload a bird image to get started with prediction and video generation.")
-    
-    # Sample bird images section
-    st.markdown("---")
-    st.subheader("📸 Supported Bird Types")
-    
-    sample_cols = st.columns(4)
-    sample_birds = ["🦅 Eagles", "🦜 Parrots", "🐦 Songbirds", "🦆 Waterfowl"]
-    
-    for i, bird in enumerate(sample_birds):
-        with sample_cols[i]:
-            st.write(f"**{bird}**")
-            st.image("📷", width=100)
 
-# Navigation
-st.markdown("---")
-col_nav1, col_nav2 = st.columns(2)
-with col_nav1:
-    if st.button("🏠 Back to Welcome Page"):
-        st.switch_page("main_app.py")
-with col_nav2:
-    st.caption("🦜 Bird Prediction AI • Advanced Bird Identification System")
+# Sidebar navigation
+st.sidebar.title("Navigation")
+if st.sidebar.button("🏠 Back to Home"):
+    st.switch_page("app.py")
