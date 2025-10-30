@@ -1,9 +1,10 @@
 import streamlit as st
 import datetime
+import random
 
 # Page configuration
 st.set_page_config(
-    page_title="Greeting App",
+    page_title="Simple Greeting App",
     page_icon="👋",
     layout="centered"
 )
@@ -11,7 +12,7 @@ st.set_page_config(
 # Main app
 def main():
     # Header with greeting
-    st.title("🎉 Welcome to My Streamlit App!")
+    st.title("👋 Welcome to Our Greeting App")
     
     # Get current time for dynamic greeting
     current_hour = datetime.datetime.now().hour
@@ -28,7 +29,6 @@ def main():
     
     # User input section
     st.write("---")
-    st.header("Let's get to know each other!")
     
     # User name input
     name = st.text_input("What's your name?", placeholder="Enter your name here...")
@@ -36,39 +36,30 @@ def main():
     if name:
         st.success(f"Hello {name}! Nice to meet you! 👋")
         
-        # Additional personalized greeting
-        col1, col2 = st.columns(2)
+        # Mood selection
+        st.write("How are you feeling today?")
+        mood = st.selectbox(
+            "Select your mood:",
+            ["Great! 😄", "Good 🙂", "Okay 😐", "Tired 😴", "Excited! 🎉"],
+            key="mood"
+        )
         
-        with col1:
-            mood = st.selectbox(
-                f"How are you feeling today, {name}?",
-                ["Great! 😄", "Good 🙂", "Okay 😐", "Could be better 😔", "Excited! 🎉"]
-            )
-        
-        with col2:
-            if st.button("Send Greeting"):
-                st.balloons()
-                st.success(f"Wishing you a wonderful day, {name}! You're feeling {mood.split(' ')[0].lower()}")
+        if st.button("Send Greeting"):
+            st.balloons()
+            st.info(f"Hello {name}! You're feeling {mood.split(' ')[0].lower()} today!")
 
-    # Features section
+    # Simple interactive section
     st.write("---")
-    st.header("App Features")
     
-    features = [
-        "✨ Friendly greeting interface",
-        "🎨 Beautiful Streamlit design",
-        "⏰ Time-based greetings",
-        "📱 Responsive layout",
-        "🎈 Interactive elements"
-    ]
-    
-    for feature in features:
-        st.write(feature)
-
-    # Footer
-    st.write("---")
-    st.markdown("---")
-    st.markdown("### Thanks for visiting! Have a great day! 🎊")
+    if st.button("Show Random Greeting"):
+        greetings = [
+            "Have a wonderful day! 🌟",
+            "You're amazing! ✨",
+            "Keep smiling! 😊",
+            "Make today great! 🚀",
+            "Sending positive vibes! 💫"
+        ]
+        st.success(random.choice(greetings))
 
 if __name__ == "__main__":
     main()
