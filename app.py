@@ -30,6 +30,11 @@ st.markdown("""
         border-radius: 10px;
         border-left: 4px solid #FF6B6B;
     }
+    .bird-emoji {
+        font-size: 120px;
+        text-align: center;
+        margin: 20px 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -61,7 +66,8 @@ def main():
             st.write(f"• {feature}")
 
     with col2:
-        st.image("🦅", width=200)
+        # Fixed: Using markdown for emoji instead of st.image
+        st.markdown('<div class="bird-emoji">🦅</div>', unsafe_allow_html=True)
         st.info("**Ready to explore?**\n\nUse the sidebar to navigate to the predictor!")
 
     # Quick stats section
