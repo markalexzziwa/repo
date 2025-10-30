@@ -24,16 +24,14 @@ st.markdown("""
         border-left: 5px solid #2E8B57;
         margin: 1rem 0;
     }
-    .prediction-card {
-        background-color: #f0f2f6;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #FF6B6B;
-    }
     .bird-emoji {
         font-size: 120px;
         text-align: center;
         margin: 20px 0;
+    }
+    .nav-button {
+        width: 100%;
+        margin: 5px 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -57,7 +55,7 @@ def main():
         
         features = [
             "**🖼️ Upload Images** - Upload bird photos for instant identification",
-            "**🤖 AI Prediction** - Get accurate bird species predictions",
+            "**🤖 AI Prediction** - Get accurate bird species predictions", 
             "**🎥 Video Generation** - Create beautiful videos of your identified birds",
             "**📊 Detailed Analysis** - Learn about bird characteristics and habitats"
         ]
@@ -68,7 +66,7 @@ def main():
     with col2:
         # Fixed: Using markdown for emoji instead of st.image
         st.markdown('<div class="bird-emoji">🦅</div>', unsafe_allow_html=True)
-        st.info("**Ready to explore?**\n\nUse the sidebar to navigate to the predictor!")
+        st.info("**Ready to explore?**\n\nClick the 'Bird Predictor' button in the sidebar!")
 
     # Quick stats section
     st.markdown("---")
@@ -89,14 +87,12 @@ def main():
     st.markdown("---")
     st.caption("🦜 Bird Prediction AI • Powered by Streamlit & AI Technology")
 
-# Sidebar navigation
+# Sidebar navigation - SINGLE consistent button
 st.sidebar.title("🚀 Navigation")
 st.sidebar.markdown("---")
 
-if st.sidebar.button("🏠 Home", use_container_width=True):
-    st.rerun()
-
-if st.sidebar.button("🦜 Bird Predictor", use_container_width=True):
+# Only ONE button for Bird Predictor
+if st.sidebar.button("🦜 Bird Predictor", use_container_width=True, key="bird_predictor_main"):
     st.switch_page("pages/2_Predictor.py")
 
 st.sidebar.markdown("---")
