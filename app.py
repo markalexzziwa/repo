@@ -1,362 +1,381 @@
-# app.py - Bird Species Classifier for Git Deployment
-from flask import Flask, request, jsonify, send_file, render_template_string
-from PIL import Image
-import io
+import streamlit as st
+import pandas as pd
 import os
 import tempfile
+import shutil
+from PIL import Image
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
-import cv2
-from gtts import gTTS
-from moviepy.editor import VideoFileClip, AudioFileClip
 import random
-import base64
 
-app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+from model_trainer import BirdClassifier, prepare_data, get_multiple_images_for_species
+from story_generator import StoryGenerator
+from video_generator import create_enhanced_story_video
 
-# HTML Template
-HTML_TEMPLATE = '''
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bird Species Classifier</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 30px; }
-        .upload-form { border: 2px dashed #4CAF50; padding: 30px; margin: 20px 0; text-align: center; background: #f9f9f9; border-radius: 10px; }
-        .result { background: #e8f5e8; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #4CAF50; }
-        button { background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; }
-        button:hover { background: #45a049; }
-        input[type="file"] { padding: 10px; margin: 10px; }
-        .image-preview { max-width: 400px; margin: 20px auto; border-radius: 10px; }
-        .loading { color: #4CAF50; margin: 10px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🐦 Bird Species Classifier</h1>
-            <p>Upload a bird image for species classification and educational video generation</p>
-        </div>
-        
-        <div class="upload-form">
-            <h3>📷 Upload Bird Image</h3>
-            <form id="uploadForm" action="/predict" method="post" enctype="multipart/form-data">
-                <input type="file" name="image" accept="image/*" required onchange="previewImage(this)">
-                <div id="imagePreview" class="image-preview"></div>
-                <br>
-                <button type="submit" onclick="showLoading()">🔍 Classify Bird Species</button>
-            </form>
-            <div id="loading" class="loading" style="display: none;">Analyzing image... Please wait</div>
-        </div>
-        
-        {% if result %}
-        <div class="result">
-            <h3>🎯 Classification Result</h3>
-            <p><strong>🦅 Species:</strong> {{ result.species }}</p>
-            <p><strong>📊 Confidence:</strong> {{ result.confidence }}</p>
-            <p><strong>📖 Description:</strong> {{ result.story }}</p>
-            {% if result.image_data %}
-            <img src="data:image/jpeg;base64,{{ result.image_data }}" alt="Uploaded Bird" class="image-preview">
-            {% endif %}
-            <br>
-            <form action="/generate-video" method="post">
-                <input type="hidden" name="species" value="{{ result.species }}">
-                <input type="hidden" name="story" value="{{ result.story }}">
-                <input type="hidden" name="image_data" value="{{ result.image_data }}">
-                <button type="submit">🎬 Generate Educational Video</button>
-            </form>
-        </div>
-        {% endif %}
-    </div>
+st.set_page_config(
+    page_title="Bird Species Video Story Generator",
+    page_icon="🐦",
+    layout="wide"
+)
 
-    <script>
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('uploadForm').style.opacity = '0.7';
-        }
-        
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; border-radius: 8px; border: 2px solid #4CAF50;">`;
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-    </script>
-</body>
-</html>
-'''
+st.title("🐦 Bird Species Video Story Generator")
+st.markdown("**Train a PyTorch model, predict bird species, generate stories, and create narrated videos**")
 
-def train_model():
-    """Initialize model components"""
-    print("✅ Bird Classifier Model Initialized")
-    return True
+if 'trained' not in st.session_state:
+    st.session_state.trained = False
+if 'model' not in st.session_state:
+    st.session_state.model = None
+if 'label_map' not in st.session_state:
+    st.session_state.label_map = None
+if 'image_df' not in st.session_state:
+    st.session_state.image_df = None
+if 'df' not in st.session_state:
+    st.session_state.df = None
 
-def predict(image_path):
-    """Predict bird species from image"""
-    try:
-        # Sample bird species
-        species_list = [
-            "African Fish Eagle", "Great Blue Turaco", "Marabou Stork", 
-            "Shoebill", "Grey Crowned Crane", "Superb Starling",
-            "Pied Kingfisher", "Hadada Ibis", "African Jacana",
-            "Lilac-breasted Roller", "African Grey Parrot"
-        ]
-        
-        # For demo - random prediction
-        species = random.choice(species_list)
-        confidence = round(random.uniform(0.75, 0.95), 2)
-        
-        return {
-            'species': species,
-            'confidence': confidence,
-            'success': True
-        }
-        
-    except Exception as e:
-        return {
-            'species': 'Unknown Species',
-            'confidence': 0.0,
-            'success': False,
-            'error': str(e)
-        }
+os.makedirs('outputs', exist_ok=True)
+os.makedirs('uploads', exist_ok=True)
 
-def generate_video(prediction, image_data=None):
-    """Generate educational video about the bird species"""
-    try:
-        species = prediction['species']
-        confidence = prediction['confidence']
-        
-        # Create temporary video file
-        output_path = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4').name
-        
-        # Video parameters
-        width, height = 1280, 720
-        fps = 24
-        duration = 10
-        total_frames = duration * fps
-        
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-        
-        # Generate story
-        stories = [
-            f"The {species} is a magnificent bird found across Africa. With {confidence:.0%} confidence, we identify this beautiful species known for its unique characteristics and ecological importance.",
-            f"Identified as {species} with {confidence:.0%} certainty. This remarkable bird plays a vital role in maintaining ecosystem balance and showcases nature's incredible diversity.",
-            f"Our analysis confirms this is a {species}. These birds are essential for biodiversity and contribute significantly to their natural habitats."
-        ]
-        story = random.choice(stories)
-        
-        # Generate video frames
-        for i in range(total_frames):
-            # Create background
-            frame = np.zeros((height, width, 3), dtype=np.uint8)
-            cv2.rectangle(frame, (0, 0), (width, height), (70, 130, 180), -1)
-            
-            # Add title
-            title = f"Educational Video: {species}"
-            cv2.putText(frame, title, (width//2 - 300, 100), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
-            
-            # Add confidence
-            conf_text = f"Identification Confidence: {confidence:.0%}"
-            cv2.putText(frame, conf_text, (width//2 - 200, 150), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-            
-            # Add story text (scrolling)
-            words = story.split()
-            lines = []
-            current_line = []
-            
-            for word in words:
-                current_line.append(word)
-                if len(' '.join(current_line)) > 50:
-                    lines.append(' '.join(current_line[:-1]))
-                    current_line = [word]
-            if current_line:
-                lines.append(' '.join(current_line))
-            
-            # Display story with scroll effect
-            y_pos = 250
-            start_idx = max(0, (i // 15) % max(1, len(lines) - 3))
-            
-            for j in range(min(4, len(lines) - start_idx)):
-                line = lines[start_idx + j]
-                text_size = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
-                x_pos = (width - text_size[0]) // 2
-                cv2.putText(frame, line, (x_pos, y_pos), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-                y_pos += 50
-            
-            # Add progress bar
-            progress = i / total_frames
-            bar_width = 600
-            bar_x = (width - bar_width) // 2
-            cv2.rectangle(frame, (bar_x, 550), (bar_x + bar_width, 570), (255, 255, 255), 2)
-            cv2.rectangle(frame, (bar_x, 550), (bar_x + int(bar_width * progress), 570), (50, 205, 50), -1)
-            
-            # Add frame counter
-            cv2.putText(frame, f"Frame {i+1}/{total_frames}", (50, 650), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-            
-            out.write(frame)
-        
-        out.release()
-        
-        # Add audio narration
-        try:
-            audio_path = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3').name
-            tts = gTTS(text=f"This educational video features the {species}. {story}", lang='en', slow=False)
-            tts.save(audio_path)
-            
-            video_clip = VideoFileClip(output_path)
-            audio_clip = AudioFileClip(audio_path)
-            
-            final_clip = video_clip.set_audio(audio_clip)
-            final_output = output_path.replace('.mp4', '_audio.mp4')
-            final_clip.write_videofile(final_output, codec='libx264', audio_codec='aac', verbose=False, logger=None)
-            
-            os.replace(final_output, output_path)
-            
-            video_clip.close()
-            audio_clip.close()
-            os.remove(audio_path)
-            
-        except Exception as e:
-            print(f"Audio narration skipped: {e}")
-        
-        return output_path
-        
-    except Exception as e:
-        print(f"Video generation error: {e}")
-        return None
+tab1, tab2, tab3, tab4 = st.tabs(["📁 Dataset Upload", "🎓 Train Model", "🔮 Predict & Generate", "📹 Create Videos"])
 
-@app.route('/')
-def home():
-    return render_template_string(HTML_TEMPLATE)
-
-@app.route('/predict', methods=['POST'])
-def handle_prediction():
-    """Handle image classification"""
-    if 'image' not in request.files:
-        return "No image file provided", 400
+with tab1:
+    st.header("Upload Dataset")
+    st.markdown("Upload a CSV file with bird species information and a folder containing images")
     
-    file = request.files['image']
-    if file.filename == '':
-        return "No file selected", 400
+    csv_file = st.file_uploader("Upload CSV file", type=['csv'])
     
-    try:
-        # Save uploaded image temporarily
-        temp_image = tempfile.NamedTemporaryFile(delete=False, suffix='.jpg')
-        file.save(temp_image.name)
+    if csv_file:
+        df = pd.read_csv(csv_file)
+        st.session_state.df = df
         
-        # Get prediction
-        prediction_result = predict(temp_image.name)
+        st.success(f"CSV loaded with {len(df)} rows")
+        st.dataframe(df.head())
         
-        if prediction_result['success']:
-            # Generate story
-            stories = [
-                f"The {prediction_result['species']} is known for its beautiful plumage and important role in the ecosystem.",
-                f"This magnificent {prediction_result['species']} showcases the incredible biodiversity of bird species.",
-                f"The {prediction_result['species']} plays a vital role in maintaining ecological balance in its habitat."
-            ]
-            story = random.choice(stories)
+        if 'common_name' in df.columns:
+            st.markdown(f"**Unique Species:** {df['common_name'].nunique()}")
+            st.bar_chart(df['common_name'].value_counts().head(10))
+        
+    images_folder = st.text_input("Path to images folder (or upload individual images below)", value="uploads/images")
+    
+    uploaded_images = st.file_uploader(
+        "Or upload bird images directly (they will be saved to uploads/images/)",
+        type=['png', 'jpg', 'jpeg'],
+        accept_multiple_files=True
+    )
+    
+    if uploaded_images:
+        os.makedirs(images_folder, exist_ok=True)
+        
+        species_folders = {}
+        
+        for uploaded_file in uploaded_images:
+            filename = uploaded_file.name
             
-            # Convert image to base64 for display
-            image = Image.open(temp_image.name)
-            buffered = io.BytesIO()
-            image.save(buffered, format="JPEG")
-            img_str = base64.b64encode(buffered.getvalue()).decode()
+            parts = filename.split('_')
+            if len(parts) >= 2:
+                species_name = parts[0].replace('-', ' ').title()
+            else:
+                species_name = "Unknown"
             
-            result_html = HTML_TEMPLATE.replace('{% if result %}', f'''
-            {% if result %}
-            <div class="result">
-                <h3>🎯 Classification Result</h3>
-                <p><strong>🦅 Species:</strong> {prediction_result['species']}</p>
-                <p><strong>📊 Confidence:</strong> {prediction_result['confidence']:.0%}</p>
-                <p><strong>📖 Description:</strong> {story}</p>
-                <img src="data:image/jpeg;base64,{img_str}" alt="Uploaded Bird" class="image-preview">
-                <br>
-                <form action="/generate-video" method="post">
-                    <input type="hidden" name="species" value="{prediction_result['species']}">
-                    <input type="hidden" name="story" value="{story}">
-                    <input type="hidden" name="image_data" value="{img_str}">
-                    <button type="submit">🎬 Generate Educational Video</button>
-                </form>
-            </div>
-            ''').replace('{% endif %}', '{% endif %}')
+            if species_name not in species_folders:
+                species_folder = os.path.join(images_folder, species_name.replace(' ', '_'))
+                os.makedirs(species_folder, exist_ok=True)
+                species_folders[species_name] = species_folder
             
-            # Clean up temp file
-            os.unlink(temp_image.name)
+            save_path = os.path.join(species_folders[species_name], uploaded_file.name)
+            with open(save_path, 'wb') as f:
+                f.write(uploaded_file.getbuffer())
+        
+        st.success(f"Uploaded {len(uploaded_images)} images to {images_folder}")
+        
+        if st.button("Create CSV from uploaded images"):
+            image_data = []
+            for species, folder in species_folders.items():
+                for img_file in os.listdir(folder):
+                    if img_file.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        image_data.append({
+                            'common_name': species,
+                            'folder_path': folder,
+                            'filename': img_file,
+                            'description': f"A beautiful {species} bird"
+                        })
             
-            return render_template_string(result_html)
+            if image_data:
+                auto_df = pd.DataFrame(image_data)
+                st.session_state.df = auto_df
+                auto_df.to_csv('uploads/dataset.csv', index=False)
+                st.success(f"Created dataset with {len(auto_df)} images from {len(species_folders)} species")
+                st.dataframe(auto_df.head())
+    
+    if st.button("Process Dataset"):
+        if st.session_state.df is not None:
+            df = st.session_state.df
+            
+            if 'folder_path' in df.columns and 'filename' in df.columns:
+                image_data = []
+                for _, row in df.iterrows():
+                    folder = row['folder_path']
+                    species = row['common_name']
+                    
+                    if os.path.exists(folder):
+                        files = [row['filename']] if 'filename' in row and pd.notna(row['filename']) else os.listdir(folder)
+                        
+                        for img_file in files:
+                            if img_file.lower().endswith(('.png', '.jpg', '.jpeg')):
+                                image_data.append({
+                                    'common_name': species,
+                                    'folder_path': folder,
+                                    'filename': img_file
+                                })
+            else:
+                st.error("CSV must have 'common_name', 'folder_path', and 'filename' columns")
+                st.stop()
+            
+            if image_data:
+                image_df = pd.DataFrame(image_data)
+                st.session_state.image_df = image_df
+                
+                st.success(f"Found {len(image_df)} images from {image_df['common_name'].nunique()} species")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("**Images per Species:**")
+                    st.dataframe(image_df['common_name'].value_counts())
+                
+                with col2:
+                    fig, ax = plt.subplots(figsize=(8, 5))
+                    image_df['common_name'].value_counts().head(10).plot(kind='bar', ax=ax, color='steelblue')
+                    ax.set_title('Top 10 Species by Image Count')
+                    ax.set_xlabel('Species')
+                    ax.set_ylabel('Image Count')
+                    plt.xticks(rotation=45, ha='right')
+                    plt.tight_layout()
+                    st.pyplot(fig)
+            else:
+                st.error("No valid images found in the specified folders")
         else:
-            return f"Classification failed: {prediction_result.get('error', 'Unknown error')}", 500
-            
-    except Exception as e:
-        return f"Error processing image: {str(e)}", 500
+            st.error("Please upload a CSV file first")
 
-@app.route('/generate-video', methods=['POST'])
-def handle_video_generation():
-    """Generate and download educational video"""
-    species = request.form.get('species', '')
-    story = request.form.get('story', '')
+with tab2:
+    st.header("Train Model")
     
-    if not species:
-        return "Species information required", 400
-    
-    try:
-        # Create prediction object
-        prediction = {
-            'species': species,
-            'confidence': 0.85,  # Default for video
-            'success': True
-        }
+    if st.session_state.image_df is None:
+        st.warning("Please upload and process a dataset first in the Dataset Upload tab")
+    else:
+        st.markdown(f"**Dataset:** {len(st.session_state.image_df)} images, {st.session_state.image_df['common_name'].nunique()} species")
         
-        # Generate video
-        video_path = generate_video(prediction)
+        col1, col2 = st.columns(2)
+        with col1:
+            epochs = st.slider("Number of epochs", min_value=1, max_value=20, value=5)
+        with col2:
+            batch_size = st.slider("Batch size", min_value=4, max_value=32, value=8, step=4)
         
-        if video_path and os.path.exists(video_path):
-            return send_file(
-                video_path,
-                as_attachment=True,
-                download_name=f"{species.replace(' ', '_')}_educational_video.mp4",
-                mimetype='video/mp4'
-            )
-        else:
-            return "Video generation failed", 500
+        if st.button("Start Training"):
+            with st.spinner("Preparing data..."):
+                train_loader, val_loader, label_map = prepare_data(
+                    st.session_state.image_df,
+                    batch_size=batch_size,
+                    train_split=0.8
+                )
+                st.session_state.label_map = label_map
+                
+                st.success(f"Created {len(train_loader)} training batches and {len(val_loader)} validation batches")
             
-    except Exception as e:
-        return f"Video generation error: {str(e)}", 500
+            with st.spinner(f"Training model for {epochs} epochs..."):
+                classifier = BirdClassifier(num_classes=len(label_map), use_pretrained=False)
+                
+                progress_bar = st.progress(0)
+                loss_placeholder = st.empty()
+                
+                for epoch in range(epochs):
+                    classifier.model.train()
+                    running_loss = 0.0
+                    
+                    for images, labels, _ in train_loader:
+                        images, labels = images.to(classifier.device), labels.to(classifier.device)
+                        outputs = classifier.model(images)
+                        
+                        import torch.nn as nn
+                        criterion = nn.CrossEntropyLoss()
+                        loss = criterion(outputs, labels)
+                        
+                        classifier.model.zero_grad()
+                        loss.backward()
+                        
+                        import torch.optim as optim
+                        if not hasattr(classifier, 'optimizer'):
+                            classifier.optimizer = optim.Adam(classifier.model.parameters(), lr=0.001)
+                        classifier.optimizer.step()
+                        
+                        running_loss += loss.item()
+                    
+                    avg_loss = running_loss / len(train_loader)
+                    progress_bar.progress((epoch + 1) / epochs)
+                    loss_placeholder.markdown(f"**Epoch {epoch+1}/{epochs}** - Loss: {avg_loss:.4f}")
+                
+                st.session_state.model = classifier
+                st.session_state.trained = True
+                
+                classifier.save_model('outputs/bird_model.pth')
+                st.success("Training completed! Model saved to outputs/bird_model.pth")
+            
+            with st.spinner("Evaluating model..."):
+                results = classifier.evaluate(val_loader, num_classes=len(label_map))
+                
+                st.metric("Validation Accuracy", f"{results['accuracy']:.2%}")
+                
+                fig, ax = plt.subplots(figsize=(10, 8))
+                sns.heatmap(results['confusion_matrix'], annot=True, fmt='d',
+                           xticklabels=list(label_map.keys()),
+                           yticklabels=list(label_map.keys()),
+                           cmap='Blues', ax=ax)
+                ax.set_xlabel('Predicted Species')
+                ax.set_ylabel('Actual Species')
+                ax.set_title('Confusion Matrix')
+                plt.xticks(rotation=45, ha='right')
+                plt.yticks(rotation=0)
+                plt.tight_layout()
+                st.pyplot(fig)
 
-@app.route('/health')
-def health_check():
-    return jsonify({
-        "status": "healthy",
-        "service": "Bird Species Classifier",
-        "version": "2.0",
-        "endpoints": {
-            "home": "/",
-            "predict": "/predict (POST)",
-            "generate_video": "/generate-video (POST)", 
-            "health": "/health"
-        }
-    })
+with tab3:
+    st.header("Predict Species & Generate Story")
+    
+    if not st.session_state.trained:
+        st.warning("Please train a model first in the Train Model tab")
+    else:
+        uploaded_test_image = st.file_uploader("Upload an image to predict", type=['png', 'jpg', 'jpeg'])
+        
+        if uploaded_test_image:
+            test_image = Image.open(uploaded_test_image)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(test_image, caption="Uploaded Image", use_container_width=True)
+            
+            temp_image_path = f"uploads/temp_{uploaded_test_image.name}"
+            test_image.save(temp_image_path)
+            
+            with st.spinner("Predicting..."):
+                predicted_species, confidence = st.session_state.model.predict(
+                    temp_image_path,
+                    st.session_state.label_map
+                )
+            
+            with col2:
+                st.success(f"**Predicted Species:** {predicted_species}")
+                st.metric("Confidence", f"{confidence:.2%}")
+                
+                story_gen = StoryGenerator()
+                
+                description = None
+                if st.session_state.df is not None and 'description' in st.session_state.df.columns:
+                    desc_row = st.session_state.df[st.session_state.df['common_name'] == predicted_species]
+                    if not desc_row.empty:
+                        description = desc_row['description'].iloc[0]
+                
+                story = story_gen.generate_story(predicted_species, description)
+                
+                st.markdown("### Generated Story")
+                st.markdown(f"*{story}*")
+                
+                if st.button("Save Story"):
+                    with open(f"outputs/{predicted_species.replace(' ', '_')}_story.txt", 'w') as f:
+                        f.write(story)
+                    st.success("Story saved!")
 
-if __name__ == '__main__':
-    # Initialize model
-    train_model()
+with tab4:
+    st.header("Create Story Videos")
     
-    # Get port from environment variable (for Crane Cloud)
-    port = int(os.environ.get('PORT', 5000))
-    
-    print("🚀 Bird Species Classifier Starting...")
-    print(f"📍 Port: {port}")
-    print("🌐 Ready for classification and video generation!")
-    
-    app.run(host='0.0.0.0', port=port, debug=False)
+    if not st.session_state.trained or st.session_state.image_df is None:
+        st.warning("Please upload a dataset and train a model first")
+    else:
+        unique_species = sorted(st.session_state.image_df['common_name'].unique())
+        
+        selected_species = st.multiselect(
+            "Select species to create videos for",
+            options=unique_species,
+            default=unique_species[:min(2, len(unique_species))]
+        )
+        
+        video_style = st.radio("Video Style", options=['transition', 'ken_burns'])
+        max_images = st.slider("Maximum images per video", min_value=1, max_value=10, value=5)
+        
+        if st.button("Generate Videos"):
+            story_gen = StoryGenerator()
+            
+            for species in selected_species:
+                with st.expander(f"Creating video for {species}", expanded=True):
+                    description = None
+                    if st.session_state.df is not None and 'description' in st.session_state.df.columns:
+                        desc_row = st.session_state.df[st.session_state.df['common_name'] == species]
+                        if not desc_row.empty:
+                            description = desc_row['description'].iloc[0]
+                    
+                    story = story_gen.generate_story(species, description)
+                    st.markdown(f"**Story:** {story}")
+                    
+                    image_paths = get_multiple_images_for_species(
+                        species,
+                        st.session_state.image_df,
+                        max_images=max_images
+                    )
+                    
+                    if image_paths:
+                        st.markdown(f"Found {len(image_paths)} images")
+                        
+                        cols = st.columns(min(len(image_paths), 4))
+                        for idx, img_path in enumerate(image_paths[:4]):
+                            with cols[idx]:
+                                st.image(img_path, caption=f"Image {idx+1}", use_container_width=True)
+                        
+                        video_output_path = f"outputs/{species.replace(' ', '_')}_video.mp4"
+                        
+                        with st.spinner(f"Creating {video_style} video..."):
+                            success = create_enhanced_story_video(
+                                species,
+                                story,
+                                image_paths,
+                                video_output_path,
+                                style=video_style
+                            )
+                        
+                        if success and os.path.exists(video_output_path):
+                            file_size = os.path.getsize(video_output_path) / (1024 * 1024)
+                            st.success(f"Video created! Size: {file_size:.2f} MB")
+                            
+                            with open(video_output_path, 'rb') as video_file:
+                                st.download_button(
+                                    label=f"Download {species} Video",
+                                    data=video_file,
+                                    file_name=f"{species.replace(' ', '_')}_video.mp4",
+                                    mime="video/mp4"
+                                )
+                            
+                            st.video(video_output_path)
+                        else:
+                            st.error(f"Failed to create video for {species}")
+                    else:
+                        st.warning(f"No images found for {species}")
+
+st.sidebar.header("About")
+st.sidebar.markdown("""
+This application recreates the Kaggle bird species video generation pipeline:
+
+1. **Upload Dataset** - Load CSV and images
+2. **Train Model** - PyTorch ResNet18 transfer learning
+3. **Predict & Generate** - Classify birds and create stories
+4. **Create Videos** - Generate narrated videos with:
+   - Multiple images with smooth transitions
+   - Synced caption chunks
+   - Text-to-speech audio narration
+   - Progress indicators
+   - Ken Burns pan-and-zoom effects
+""")
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("**Model Info:**")
+if st.session_state.trained:
+    st.sidebar.success("✓ Model trained")
+    st.sidebar.markdown(f"Classes: {len(st.session_state.label_map) if st.session_state.label_map else 0}")
+else:
+    st.sidebar.info("Model not trained yet")
