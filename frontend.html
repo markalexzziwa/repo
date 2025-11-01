@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bird Species Classifier & Story Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #3498db;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #ecf0f1;
+        }
+
+        .upload-area:hover {
+            background: #d6eaf8;
+            border-color: #2980b9;
+        }
+
+        .upload-area i {
+            font-size: 3em;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .preview-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .results {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .species-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .confidence-bar {
+            background: #ecf0f1;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .story-container {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .video-container {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        #generatedVideo {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            background: #ecf0f1;
+            border-radius: 10px;
+            height: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .download-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #229954;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦜 Bird Species Classifier</h1>
+            <p>Upload a bird image to identify the species and generate an amazing story video!</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel - Upload and Prediction -->
+            <div class="panel">
+                <h2>🔍 Bird Identification</h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <i>📁</i>
+                    <p>Click to upload a bird image or drag and drop</p>
+                    <p class="small">Supported formats: JPG, PNG, JPEG</p>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
+
+                <div class="preview-container">
+                    <img id="imagePreview" alt="Image Preview">
+                </div>
+
+                <div class="controls">
+                    <button class="btn" id="predictBtn" disabled>Identify Species</button>
+                    <button class="btn btn-secondary" id="resetBtn">Reset</button>
+                </div>
+
+                <div class="loading" id="predictionLoading">
+                    <div class="spinner"></div>
+                    <p>Analyzing bird image...</p>
+                </div>
+
+                <div class="results" id="predictionResults">
+                    <h3>Identification Results</h3>
+                    <div id="speciesResult"></div>
+                    <button class="btn btn-success" id="generateStoryBtn">Generate Story Video</button>
+                </div>
+            </div>
+
+            <!-- Right Panel - Story Generation -->
+            <div class="panel">
+                <h2>🎬 Story Video Generator</h2>
+                
+                <div id="storyControls" style="display: none;">
+                    <label for="videoStyle">Video Style:</label>
+                    <select id="videoStyle" class="btn">
+                        <option value="ken_burns">Ken Burns Effect</option>
+                        <option value="transition">Image Transitions</option>
+                    </select>
+                    
+                    <button class="btn btn-success" id="createVideoBtn">Create Story Video</button>
+                </div>
+
+                <div class="loading" id="videoLoading">
+                    <div class="spinner"></div>
+                    <p>Generating your story video...</p>
+                    <div class="progress-bar" id="videoProgress">
+                        <div class="progress-fill" id="videoProgressFill"></div>
+                    </div>
+                </div>
+
+                <div class="story-container" id="generatedStory">
+                    <h3>Generated Story</h3>
+                    <p id="storyText"></p>
+                </div>
+
+                <div class="video-container" id="videoResult">
+                    <h3>Your Story Video</h3>
+                    <video id="generatedVideo" controls>
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="download-links">
+                        <a href="#" class="download-btn" id="downloadVideo">Download Video</a>
+                        <a href="#" class="download-btn" id="downloadAudio">Download Audio</a>
+                    </div>
+                </div>
+
+                <div class="status-message" id="statusMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BirdClassifierFrontend {
+            constructor() {
+                this.kaggleBaseUrl = 'https://www.kaggle.com/code/markalexzziwa/zedug'; // Will be set based on your Kaggle notebook
+                this.currentImage = null;
+                this.currentPrediction = null;
+                this.initEventListeners();
+            }
+
+            initEventListeners() {
+                // File upload handling
+                const uploadArea = document.getElementById('uploadArea');
+                const fileInput = document.getElementById('fileInput');
+                
+                uploadArea.addEventListener('click', () => fileInput.click());
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.background = '#d6eaf8';
+                });
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.background = '#ecf0f1';
+                });
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.background = '#ecf0f1';
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleFileSelect(files[0]);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        this.handleFileSelect(e.target.files[0]);
+                    }
+                });
+
+                // Button event listeners
+                document.getElementById('predictBtn').addEventListener('click', () => this.predictSpecies());
+                document.getElementById('resetBtn').addEventListener('click', () => this.reset());
+                document.getElementById('generateStoryBtn').addEventListener('click', () => this.showStoryControls());
+                document.getElementById('createVideoBtn').addEventListener('click', () => this.generateStoryVideo());
+            }
+
+            handleFileSelect(file) {
+                if (!file.type.match('image.*')) {
+                    this.showStatus('Please upload an image file (JPG, PNG, JPEG)', 'error');
+                    return;
+                }
+
+                this.currentImage = file;
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    
+                    // Enable predict button
+                    document.getElementById('predictBtn').disabled = false;
+                    
+                    // Hide previous results
+                    this.hideResults();
+                };
+                reader.readAsDataURL(file);
+            }
+
+            async predictSpecies() {
+                if (!this.currentImage) return;
+
+                const loading = document.getElementById('predictionLoading');
+                const predictBtn = document.getElementById('predictBtn');
+                
+                loading.style.display = 'block';
+                predictBtn.disabled = true;
+
+                try {
+                    // Simulate API call to your notebook
+                    // In practice, you'd call your notebook's prediction endpoint
+                    const formData = new FormData();
+                    formData.append('image', this.currentImage);
+
+                    // This is where you'd integrate with your notebook's API
+                    const response = await this.callNotebookAPI('predict', formData);
+                    
+                    this.currentPrediction = response;
+                    this.displayPredictionResults(response);
+                    
+                } catch (error) {
+                    this.showStatus('Error predicting species: ' + error.message, 'error');
+                } finally {
+                    loading.style.display = 'none';
+                    predictBtn.disabled = false;
+                }
+            }
+
+            async callNotebookAPI(endpoint, data) {
+                // This is a mock implementation - you'll need to adapt it to your notebook setup
+                
+                // For Kaggle notebooks, you might use:
+                // - Kaggle Kernels API
+                // - Flask/FastAPI server within the notebook
+                // - Direct function calls if running locally
+                
+                // Mock response for demonstration
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            species: "African Fish Eagle",
+                            confidence: 0.92,
+                            scientific_name: "Haliaeetus vocifer",
+                            description: "A large eagle found throughout sub-Saharan Africa",
+                            all_predictions: [
+                                {species: "African Fish Eagle", confidence: 0.92},
+                                {species: "Martial Eagle", confidence: 0.05},
+                                {species: "Crowned Eagle", confidence: 0.03}
+                            ]
+                        });
+                    }, 2000);
+                });
+            }
+
+            displayPredictionResults(prediction) {
+                const resultsDiv = document.getElementById('predictionResults');
+                const speciesResultDiv = document.getElementById('speciesResult');
+                
+                speciesResultDiv.innerHTML = `
+                    <div class="species-card">
+                        <h3>${prediction.species}</h3>
+                        <p><em>${prediction.scientific_name}</em></p>
+                        <p>${prediction.description}</p>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${prediction.confidence * 100}%"></div>
+                        </div>
+                        <p>Confidence: ${(prediction.confidence * 100).toFixed(1)}%</p>
+                    </div>
+                    ${prediction.all_predictions ? `
+                        <h4>Other possibilities:</h4>
+                        ${prediction.all_predictions.slice(1).map(pred => `
+                            <p>${pred.species}: ${(pred.confidence * 100).toFixed(1)}%</p>
+                        `).join('')}
+                    ` : ''}
+                `;
+                
+                resultsDiv.style.display = 'block';
+            }
+
+            showStoryControls() {
+                document.getElementById('storyControls').style.display = 'block';
+            }
+
+            async generateStoryVideo() {
+                if (!this.currentPrediction) return;
+
+                const loading = document.getElementById('videoLoading');
+                const progressBar = document.getElementById('videoProgress');
+                const progressFill = document.getElementById('videoProgressFill');
+                
+                loading.style.display = 'block';
+                progressBar.style.display = 'block';
+
+                try {
+                    // Simulate video generation progress
+                    await this.simulateVideoGeneration(progressFill);
+                    
+                    // Generate story
+                    const story = await this.generateStory(this.currentPrediction.species);
+                    
+                    // Display story
+                    document.getElementById('storyText').textContent = story;
+                    document.getElementById('generatedStory').style.display = 'block';
+                    
+                    // Simulate video creation
+                    const videoUrl = await this.createStoryVideo(this.currentPrediction.species, story);
+                    
+                    // Display video
+                    const videoElement = document.getElementById('generatedVideo');
+                    videoElement.src = videoUrl;
+                    document.getElementById('videoResult').style.display = 'block';
+                    
+                    // Set up download links
+                    document.getElementById('downloadVideo').href = videoUrl;
+                    document.getElementById('downloadAudio').href = videoUrl.replace('.mp4', '.mp3');
+                    
+                    this.showStatus('Story video generated successfully!', 'success');
+                    
+                } catch (error) {
+                    this.showStatus('Error generating video: ' + error.message, 'error');
+                } finally {
+                    loading.style.display = 'none';
+                    progressBar.style.display = 'none';
+                }
+            }
+
+            async simulateVideoGeneration(progressFill) {
+                return new Promise((resolve) => {
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 10;
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(interval);
+                            resolve();
+                        }
+                        progressFill.style.width = progress + '%';
+                    }, 200);
+                });
+            }
+
+            async generateStory(species) {
+                // Mock story generation - integrate with your notebook's story generation
+                const stories = [
+                    `In the heart of Uganda's wilderness, ${species} soars majestically through the skies. With its impressive wingspan and keen eyesight, this magnificent bird represents the wild spirit of Africa. Each day brings new adventures as it patrols its territory, a true monarch of the avian world.`,
+                    `The ${species}, a symbol of grace and power, dominates the African skies. Its distinctive call echoes across the landscape, a sound that has become synonymous with the wild places of this beautiful continent. Through its daily routines, we glimpse the intricate balance of nature.`,
+                    `Witness the ${species} in its natural habitat, a breathtaking sight that captures the essence of African wildlife. This remarkable bird plays a crucial role in its ecosystem, maintaining the delicate balance between species and habitats.`
+                ];
+                
+                return stories[Math.floor(Math.random() * stories.length)];
+            }
+
+            async createStoryVideo(species, story) {
+                // Mock video creation - integrate with your notebook's video generation
+                // This would call your create_enhanced_story_video function
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        // Return a mock video URL
+                        resolve('/kaggle/working/story_video.mp4');
+                    }, 3000);
+                });
+            }
+
+            showStatus(message, type) {
+                const statusDiv = document.getElementById('statusMessage');
+                statusDiv.textContent = message;
+                statusDiv.className = `status-message status-${type}`;
+                statusDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+
+            hideResults() {
+                document.getElementById('predictionResults').style.display = 'none';
+                document.getElementById('storyControls').style.display = 'none';
+                document.getElementById('generatedStory').style.display = 'none';
+                document.getElementById('videoResult').style.display = 'none';
+            }
+
+            reset() {
+                this.currentImage = null;
+                this.currentPrediction = null;
+                
+                document.getElementById('fileInput').value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('predictBtn').disabled = true;
+                
+                this.hideResults();
+                this.showStatus('Reset completed', 'success');
+            }
+        }
+
+        // Initialize the application when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new BirdClassifierFrontend();
+        });
+
+        // Utility function to download resources from Kaggle
+        async function downloadKaggleResources() {
+            // This function would handle downloading model files, datasets, etc.
+            // from your Kaggle notebook
+            console.log('Downloading resources from Kaggle notebook...');
+            
+            // Example structure:
+            /*
+            const resources = {
+                model: '/kaggle/working/best_model.pth',
+                labels: '/kaggle/working/label_map.json',
+                config: '/kaggle/working/model_config.json'
+            };
+            
+            for (const [name, path] of Object.entries(resources)) {
+                await downloadFile(path, name);
+            }
+            */
+        }
+
+        // Function to integrate with Kaggle Notebook
+        function connectToKaggleNotebook(notebookUrl) {
+            // Implementation for connecting to your specific Kaggle notebook
+            // This could use:
+            // - Kaggle API
+            // - Webhooks
+            // - Custom API endpoints
+            console.log('Connecting to Kaggle notebook:', notebookUrl);
+        }
+    </script>
+</body>
+</html>
