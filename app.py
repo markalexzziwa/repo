@@ -32,7 +32,7 @@ def _set_background_glass(img_path: str = "ugb1.png"):
             -webkit-backdrop-filter: blur(6px);
             border-radius: 12px;
             padding: 1rem 1.5rem;
-            # CSS for dark theme and components
+        }}
         </style>
         """
         st.markdown(css, unsafe_allow_html=True)
