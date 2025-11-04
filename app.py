@@ -93,20 +93,29 @@ try:
         </style>
         """, unsafe_allow_html=True)
 
-        st.image(_logo_small, use_column_width=False)
+        # Create columns for logo and title
+        logo_col, title_col = st.columns([1, 4])
+        with logo_col:
+            st.image(_logo_small, use_column_width=True)
+        with title_col:
+            st.markdown("<h1 style='margin: 1rem 0 0.1rem 0;'>Birds in Uganda</h1>", unsafe_allow_html=True)
 except Exception:
     # If logo not found or cannot be opened, skip silently
     pass
 
-# Centered title
-st.markdown("<h1 style='text-align: center; margin-bottom: 0.1rem;'>Birds in Uganda</h1>", unsafe_allow_html=True)
-
 # Centered welcome message (italic)
 st.markdown("<p style='text-align: center;'><em>Upload any bird image you'd like to learn more about it. Discover more about the birds of Uganda!</em></p>", unsafe_allow_html=True)
 
-# Add compact CSS for simple light layout (removed dark card and green panel)
 st.markdown("""
 <style>
+.black-container {
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    color: white;
+}
 .input-section {
     background: rgba(255,255,255,0.98);
     border-radius: 10px;
@@ -134,6 +143,9 @@ st.markdown("""
 
 # Main content container with modern layout
 with st.container():
+    # Add black container wrapper
+    st.markdown('<div class="black-container">', unsafe_allow_html=True)
+    
     # Instructions
     st.markdown("""
     <div style='text-align:center; margin-bottom: 1rem;'>
@@ -190,4 +202,5 @@ with st.container():
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # (no wrapper divs to close)
+    # Close the black container
+    st.markdown('</div>', unsafe_allow_html=True)
