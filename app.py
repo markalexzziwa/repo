@@ -1,45 +1,35 @@
 import streamlit as st
+from PIL import Image
+import cv2
+
+# Display logo
+st.image("ugb1.png", use_column_width=True)
 
 # Title of the app
-st.title("BMI Calculator")
+st.title("Birds in Uganda")
 
-# Input: Weight in kilograms
-weight = st.number_input("Enter your weight (kg):", min_value=0.0, format="%.2f")
+# Welcome message
+st.markdown("*Upload any bird image you'd like to learn more about it. Discover more about that it*")
 
-# Input: Height format selection
-height_unit = st.radio("Select your height unit:", ['Centimeters', 'Meters', 'Feet'])
-
-# Input: Height value based on selected unit
-height = st.number_input(f"Enter your height ({height_unit.lower()}):", min_value=0.0, format="%.2f")
-
-# Calculate BMI when button is pressed
-if st.button("Calculate BMI"):
-    try:
-        # Convert height to meters based on selected unit
-        if height_unit == 'Centimeters':
-            height_m = height / 100
-        elif height_unit == 'Feet':
-            height_m = height / 3.28
-        else:
-            height_m = height
-
-        # Prevent division by zero
-        if height_m <= 0:
-            st.error("Height must be greater than zero.")
-        else:
-            bmi = weight / (height_m ** 2)
-            st.success(f"Your BMI is {bmi:.2f}")
-
-            # BMI interpretation
-            if bmi < 16:
-                st.error("You are Extremely Underweight")
-            elif 16 <= bmi < 18.5:
-                st.warning("You are Underweight")
-            elif 18.5 <= bmi < 25:
-                st.success("You are Healthy")
-            elif 25 <= bmi < 30:
-                st.warning("You are Overweight")
-            else:
-                st.error("You are Extremely Overweight")
-    except:
-        st.error("Please enter valid numeric values.")
+# Create a box container
+with st.container():
+    st.write("Choose how you want to input the bird image:")
+    
+    # Create two columns for the options
+    col1, col2 = st.columns(2)
+    
+    # First column - Upload image option
+    with col1:
+        st.write("📁 Browse Image")
+        uploaded_file = st.file_uploader("Choose an image...", type=['png', 'jpg', 'jpeg'])
+        if uploaded_file is not None:
+            image = Image.open(uploaded_file)
+            st.image(image, caption='Uploaded Image', use_column_width=True)
+    
+    # Second column - Camera option
+    with col2:
+        st.write("📷 Capture Image")
+        camera_photo = st.camera_input("Take a photo")
+        if camera_photo is not None:
+            image = Image.open(camera_photo)
+            st.image(image, caption='Captured Image', use_column_width=True)
