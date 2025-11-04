@@ -150,17 +150,14 @@ with st.container():
     with col1:
         st.markdown("""
         <div style='text-align: center; margin-bottom: 1rem;'>
-            <h3 style='font-size: 1.2rem; color: #1f2937;'>Upload from Device</h3>
+            <h3 style='font-size: 1.2rem; color: #1f2937;'> 📁 Upload from Device</h3>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
         <div style='text-align: center; margin-bottom: 1rem;'>
-            <h3 style='font-size: 1.2rem; color: #1f2937;'>Take a Photo</h3>
-            <p style='color: #4b5563; font-size: 0.9rem;'>
-                Use your camera to capture and identify birds using camera
-            </p>
+            <h3 style='font-size: 1.2rem; color: #1f2937;'> 📷 Use Camera</h3>
         </div>
         """, unsafe_allow_html=True)
     
@@ -174,10 +171,6 @@ with st.container():
     
     # Camera section with modern styling
     with col2:
-        st.markdown('<div class="input-section">', unsafe_allow_html=True)
-        st.markdown('<p class="section-title">📷 Capture Image</p>', unsafe_allow_html=True)
-        
-        # Camera activation state
         if 'camera_active' not in st.session_state:
             st.session_state.camera_active = False
 
