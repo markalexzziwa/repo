@@ -161,7 +161,14 @@ with st.container():
 
         # Camera controls
         st.markdown("<h4 style='margin-bottom:0.5rem; color:#1f2937;'>📷 Take Picture</h4>", unsafe_allow_html=True)
+        # When the camera is inactive show a black placeholder that mimics the camera preview.
+        # It disappears when the user clicks Start Camera and the real camera input is opened.
         if not st.session_state.camera_active:
+            # Use aspect-ratio to approximate the camera preview size; add a min-height for older browsers.
+            st.markdown(
+                "<div style='width:100%; aspect-ratio:4/3; min-height:280px; background:#000; border-radius:8px; margin-bottom:0.75rem; box-shadow: inset 0 0 40px rgba(0,0,0,0.6);'></div>",
+                unsafe_allow_html=True,
+            )
             if st.button("Start Camera 📷", key="use_camera_button"):
                 st.session_state.camera_active = True
         
