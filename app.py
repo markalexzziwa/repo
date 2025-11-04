@@ -67,32 +67,40 @@ st.markdown("<p style='text-align: center;'><em>Upload any bird image you'd like
 st.markdown("""
 <style>
 .upload-section, .camera-section {
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.6);
     border-radius: 15px;
     padding: 1.5rem;
     margin: 1rem 0;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.8);
 }
 .section-title {
-    color: #1E1E1E;
-    font-size: 1.2rem;
+    color: #555;
+    font-size: 1.1rem;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    font-weight: 300;
 }
 .stButton > button {
     width: 100%;
     border-radius: 10px;
     padding: 0.5rem 1rem;
-    background: #2E86C1;
+    background: rgba(46,134,193,0.8);
     color: white;
     border: none;
     margin: 0.5rem 0;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
 }
 .stButton > button:hover {
-    background: #21618C;
+    background: rgba(33,97,140,0.9);
+}
+.instructions-text {
+    font-weight: 300;
+    color: #555;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -101,8 +109,8 @@ st.markdown("""
 with st.container():
     # Instructions with modern styling
     st.markdown("""
-    <div style='background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 10px; margin-bottom: 2rem;'>
-        <p style='text-align: center; color: #666; margin: 0;'>
+    <div style='background: rgba(255,255,255,0.4); padding: 1rem; border-radius: 10px; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.6);'>
+        <p style='text-align: center; color: #555; margin: 0; font-weight: 300; letter-spacing: 0.5px;'>
             Choose one of the options below to identify a bird
         </p>
     </div>
