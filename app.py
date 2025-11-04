@@ -159,6 +159,7 @@ with st.container():
             st.session_state.camera_active = False
 
         # Camera controls
+        st.markdown("<h4 style='margin-bottom:0.5rem; color:#1f2937;'>Take Picture</h4>", unsafe_allow_html=True)
         if not st.session_state.camera_active:
             if st.button("Start Camera 📷", key="use_camera_button"):
                 st.session_state.camera_active = True
