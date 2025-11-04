@@ -66,22 +66,36 @@ st.markdown("<p style='text-align: center;'><em>Upload any bird image you'd like
 # Add custom CSS for modern components
 st.markdown("""
 <style>
-.upload-section, .camera-section {
-    background: rgba(255,255,255,0.6);
+.main-card {
+    background: rgba(33, 33, 45, 0.85);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.instructions {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.input-section {
+    background: rgba(255,255,255,0.08);
     border-radius: 15px;
     padding: 1.5rem;
     margin: 1rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 .section-title {
-    color: #555;
+    color: rgba(255,255,255,0.9);
     font-size: 1.1rem;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     font-weight: 300;
 }
 .stButton > button {
@@ -98,19 +112,22 @@ st.markdown("""
 .stButton > button:hover {
     background: rgba(33,97,140,0.9);
 }
-.instructions-text {
-    font-weight: 300;
-    color: #555;
+/* Override Streamlit's default text colors in the dark card */
+.main-card label, .main-card .stTextInput > label {
+    color: rgba(255,255,255,0.8) !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # Main content container with modern layout
 with st.container():
+    # Start main dark card
+    st.markdown('<div class="main-card">', unsafe_allow_html=True)
+    
     # Instructions with modern styling
     st.markdown("""
-    <div style='background: rgba(255,255,255,0.4); padding: 1rem; border-radius: 10px; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.6);'>
-        <p style='text-align: center; color: #555; margin: 0; font-weight: 300; letter-spacing: 0.5px;'>
+    <div class="instructions">
+        <p style='text-align: center; color: rgba(255,255,255,0.9); margin: 0; font-weight: 300; letter-spacing: 0.5px;'>
             Choose one of the options below to identify a bird
         </p>
     </div>
@@ -121,7 +138,7 @@ with st.container():
     
     # Upload section with modern styling
     with col1:
-        st.markdown('<div class="upload-section">', unsafe_allow_html=True)
+        st.markdown('<div class="input-section">', unsafe_allow_html=True)
         st.markdown('<p class="section-title">📁 Upload Image</p>', unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Select a bird image", type=['png', 'jpg', 'jpeg'])
         if uploaded_file is not None:
@@ -131,7 +148,7 @@ with st.container():
     
     # Camera section with modern styling
     with col2:
-        st.markdown('<div class="camera-section">', unsafe_allow_html=True)
+        st.markdown('<div class="input-section">', unsafe_allow_html=True)
         st.markdown('<p class="section-title">📷 Capture Image</p>', unsafe_allow_html=True)
         
         # Camera activation state
@@ -153,3 +170,6 @@ with st.container():
                 st.session_state.camera_active = False
         
         st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Close the main dark card
+    st.markdown('</div>', unsafe_allow_html=True)
