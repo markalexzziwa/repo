@@ -32,7 +32,7 @@ def _set_background_glass(img_path: str = "ugb1.png"):
             -webkit-backdrop-filter: blur(6px);
             border-radius: 12px;
             padding: 1rem 1.5rem;
-        }}
+            # CSS for dark theme and components
         </style>
         """
         st.markdown(css, unsafe_allow_html=True)
@@ -52,6 +52,47 @@ try:
     # center the image using three columns and put image in the middle
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
+
+        # Custom CSS for dark card layout
+        st.markdown("""
+        <style>
+        .dark-card {
+            background: rgba(23, 23, 35, 0.92);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 2rem auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 1200px;
+        }
+        .input-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .section-title {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-weight: 300;
+        }
+        /* Override Streamlit's default text colors in the dark card */
+        .dark-card label, 
+        .dark-card .stTextInput > label,
+        .dark-card .stFileUploader label,
+        .dark-card .stFileUploader span,
+        .dark-card [data-testid="stCameraInputLabel"] {
+            color: rgba(255,255,255,0.8) !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
         st.image(_logo_small, use_column_width=False)
 except Exception:
     # If logo not found or cannot be opened, skip silently
