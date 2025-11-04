@@ -1,0 +1,6 @@
+streamlit
+pillow
+numpy
+# Optional: include OpenCV if you need advanced computer-vision functions
+# Note: some cloud hosts have large wheels; include only if necessary
+opencv-python

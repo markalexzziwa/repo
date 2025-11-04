@@ -1,6 +1,7 @@
 import streamlit as st
 from PIL import Image
-import cv2
+# Note: OpenCV (cv2) is optional. Remove the import to avoid deployment issues unless you add
+# `opencv-python` to your `requirements.txt` and your deployment environment supports it.
 
 # Display logo
 st.image("ugb1.png", use_column_width=True)
