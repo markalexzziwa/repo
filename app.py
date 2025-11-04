@@ -20,7 +20,8 @@ def _set_background_glass(img_path: str = "ugb1.png"):
         css = f"""
         <style>
         .stApp {{
-            background-image: url("data:image/png;base64,{b64}");
+            /* Apply a white overlay so the image appears very subtle, requiring focus to notice */
+            background-image: linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url("data:image/png;base64,{b64}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
