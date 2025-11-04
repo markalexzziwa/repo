@@ -91,7 +91,7 @@ try:
         """, unsafe_allow_html=True)
 
     # Create columns for logo and title
-    logo_col, title_col = st.columns([1, 4])
+    logo_col, title_col = st.columns([1, 2])
     with logo_col:
         st.image(_logo_small, use_column_width=False)
     with title_col:
@@ -101,7 +101,7 @@ except Exception:
     pass
 
 # Centered welcome message (italic)
-st.markdown("<p style='text-align: center; margin-top: -2rem; margin-bottom: 2rem;'><em>Upload any bird image you'd like to learn more about it. Discover more about the birds of Uganda!</em></p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; margin-top: -1rem; margin-bottom: 2rem;'><em>Upload any bird image you'd like to learn more about it. Discover more about the birds of Uganda!</em></p>", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
@@ -141,23 +141,6 @@ with st.container():
     </div>
     """, unsafe_allow_html=True)
 
-    # Create a table structure for the two sections
-    st.markdown("""
-    <table style="width: 100%; border-collapse: separate; border-spacing: 1rem;">
-        <tr>
-            <td style="width: 50%; background: rgba(255,255,255,0.98); border-radius: 10px; padding: 1.5rem; vertical-align: top;">
-                <div style='text-align: center; margin-bottom: 1rem;'>
-                    <h3 style='font-size: 1.2rem; color: #1f2937;'> 📁 Upload from Device</h3>
-                </div>
-            </td>
-            <td style="width: 50%; background: rgba(255,255,255,0.98); border-radius: 10px; padding: 1.5rem; vertical-align: top;">
-                <div style='text-align: center; margin-bottom: 1rem;'>
-                    <h3 style='font-size: 1.2rem; color: #1f2937;'> 📷 Use Camera</h3>
-                </div>
-            </td>
-        </tr>
-    </table>
-    """, unsafe_allow_html=True)
 
     # Create columns for the interactive elements
     col1, col2 = st.columns(2)
@@ -165,7 +148,7 @@ with st.container():
     # Upload section with modern styling
     
     with col1:
-        uploaded_file = st.file_uploader("Select a bird image", type=['png', 'jpg', 'jpeg'])
+        uploaded_file = st.file_uploader("📁 Select a bird image", type=['png', 'jpg', 'jpeg'])
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption='Uploaded Image', use_column_width=True)
