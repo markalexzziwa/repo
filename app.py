@@ -169,8 +169,11 @@ with st.container():
                 "<div style='width:100%; aspect-ratio:4/3; min-height:280px; background:#000; border-radius:8px; margin-bottom:0.75rem; box-shadow: inset 0 0 40px rgba(0,0,0,0.6);'></div>",
                 unsafe_allow_html=True,
             )
-            if st.button("Start Camera 📷", key="use_camera_button"):
+            # Use an on_click callback to reliably set session state and trigger a rerun so the placeholder is removed.
+            def _start_camera():
                 st.session_state.camera_active = True
+
+            st.button("Start Camera 📷", key="use_camera_button", on_click=_start_camera)
         
         if st.session_state.camera_active:
             camera_photo = st.camera_input("Take a photo", key="camera_input")
