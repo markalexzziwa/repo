@@ -172,6 +172,24 @@ with st.container():
             Choose one of the options below to identify a bird
         </p>
     </div>
+
+    <!-- Summary card inside the main dark card -->
+    <div style='background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;'>
+        <div style='color: rgba(255,255,255,0.95); font-weight:600; margin-bottom:0.5rem;'>Input Sections:</div>
+        <ul style='color: rgba(255,255,255,0.85); margin-top:0.25rem; margin-bottom:0.75rem;'>
+            <li>Subtle dark backgrounds</li>
+            <li>Light borders for definition</li>
+            <li>Improved spacing and padding</li>
+            <li>Better visual hierarchy</li>
+        </ul>
+        <div style='color: rgba(255,255,255,0.95); font-weight:600; margin-bottom:0.5rem;'>Interactive Elements:</div>
+        <ul style='color: rgba(255,255,255,0.85); margin-top:0.25rem; margin-bottom:0;'>
+            <li>Improved button styling</li>
+            <li>Better hover effects</li>
+            <li>Smoother transitions</li>
+            <li>File uploader styling matches theme</li>
+        </ul>
+    </div>
     """, unsafe_allow_html=True)
     
     # Create two columns with equal width
