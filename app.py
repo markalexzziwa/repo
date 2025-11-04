@@ -153,6 +153,16 @@ st.markdown("""
 .stButton > button:hover {
     background: rgba(33,97,140,0.9);
 }
+/* Green panel styling */
+.green-panel {
+    background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(39,174,96,0.08));
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 0.5rem 0 1rem 0;
+    border: 1px solid rgba(46,204,113,0.18);
+}
+.green-panel .section-title { color: rgba(255,255,255,0.95); }
+
 /* Override Streamlit's default text colors in the dark card */
 .main-card label, .main-card .stTextInput > label {
     color: rgba(255,255,255,0.8) !important;
@@ -172,26 +182,10 @@ with st.container():
             Choose one of the options below to identify a bird
         </p>
     </div>
-
-    <!-- Summary card inside the main dark card -->
-    <div style='background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;'>
-        <div style='color: rgba(255,255,255,0.95); font-weight:600; margin-bottom:0.5rem;'>Input Sections:</div>
-        <ul style='color: rgba(255,255,255,0.85); margin-top:0.25rem; margin-bottom:0.75rem;'>
-            <li>Subtle dark backgrounds</li>
-            <li>Light borders for definition</li>
-            <li>Improved spacing and padding</li>
-            <li>Better visual hierarchy</li>
-        </ul>
-        <div style='color: rgba(255,255,255,0.95); font-weight:600; margin-bottom:0.5rem;'>Interactive Elements:</div>
-        <ul style='color: rgba(255,255,255,0.85); margin-top:0.25rem; margin-bottom:0;'>
-            <li>Improved button styling</li>
-            <li>Better hover effects</li>
-            <li>Smoother transitions</li>
-            <li>File uploader styling matches theme</li>
-        </ul>
-    </div>
     """, unsafe_allow_html=True)
     
+    # Create green panel to contain the input options
+    st.markdown('<div class="green-panel">', unsafe_allow_html=True)
     # Create two columns with equal width
     col1, col2 = st.columns(2)
     
@@ -203,7 +197,7 @@ with st.container():
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption='Uploaded Image', use_column_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Camera section with modern styling
     with col2:
@@ -230,5 +224,8 @@ with st.container():
         
         st.markdown('</div>', unsafe_allow_html=True)
     
+    # Close the green panel
+    st.markdown('</div>', unsafe_allow_html=True)
+
     # Close the main dark card
     st.markdown('</div>', unsafe_allow_html=True)
