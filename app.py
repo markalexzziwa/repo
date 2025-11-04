@@ -104,89 +104,46 @@ st.markdown("<h1 style='text-align: center; margin-bottom: 0.1rem;'>Birds in Uga
 # Centered welcome message (italic)
 st.markdown("<p style='text-align: center;'><em>Upload any bird image you'd like to learn more about it. Discover more about the birds of Uganda!</em></p>", unsafe_allow_html=True)
 
-# Add custom CSS for modern components
+# Add compact CSS for simple light layout (removed dark card and green panel)
 st.markdown("""
 <style>
-.main-card {
-    background: rgba(33, 33, 45, 0.85);
-    border-radius: 20px;
-    padding: 2rem;
-    margin: 2rem 0;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.instructions {
-    background: rgba(255,255,255,0.1);
+.input-section {
+    background: rgba(255,255,255,0.98);
     border-radius: 10px;
     padding: 1rem;
-    margin-bottom: 2rem;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.input-section {
-    background: rgba(255,255,255,0.08);
-    border-radius: 15px;
-    padding: 1.5rem;
-    margin: 1rem 0;
-    border: 1px solid rgba(255,255,255,0.1);
+    margin: 0.5rem 0;
+    border: 1px solid rgba(230,230,230,0.8);
 }
 .section-title {
-    color: rgba(255,255,255,0.9);
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    font-weight: 300;
+    color: #1f2937;
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
 }
 .stButton > button {
     width: 100%;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 0.5rem 1rem;
-    background: rgba(46,134,193,0.8);
+    background: rgba(34,197,94,0.9);
     color: white;
     border: none;
-    margin: 0.5rem 0;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
 }
-.stButton > button:hover {
-    background: rgba(33,97,140,0.9);
-}
-/* Green panel styling */
-.green-panel {
-    background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(39,174,96,0.08));
-    border-radius: 12px;
-    padding: 1rem;
-    margin: 0.5rem 0 1rem 0;
-    border: 1px solid rgba(46,204,113,0.18);
-}
-.green-panel .section-title { color: rgba(255,255,255,0.95); }
-
-/* Override Streamlit's default text colors in the dark card */
-.main-card label, .main-card .stTextInput > label {
-    color: rgba(255,255,255,0.8) !important;
-}
+.stButton > button:hover { background: rgba(21,128,61,0.95); }
 </style>
 """, unsafe_allow_html=True)
 
 # Main content container with modern layout
 with st.container():
-    # Start main dark card
-    st.markdown('<div class="main-card">', unsafe_allow_html=True)
-    
-    # Instructions with modern styling
+    # Instructions
     st.markdown("""
-    <div class="instructions">
-        <p style='text-align: center; color: rgba(255,255,255,0.9); margin: 0; font-weight: 300; letter-spacing: 0.5px;'>
+    <div style='text-align:center; margin-bottom: 1rem;'>
+        <p style='color: #374151; margin: 0; font-weight: 400; font-size: 1.05rem;'>
             Choose one of the options below to identify a bird
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Create green panel to contain the input options
-    st.markdown('<div class="green-panel">', unsafe_allow_html=True)
-    # Create two columns with equal width
+
+    # Create two columns with equal width (input sections inside simple white cards)
     col1, col2 = st.columns(2)
     
     # Upload section with modern styling
@@ -224,8 +181,4 @@ with st.container():
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Close the green panel
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Close the main dark card
-    st.markdown('</div>', unsafe_allow_html=True)
+    # (no wrapper divs to close)
