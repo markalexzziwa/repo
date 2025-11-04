@@ -2,8 +2,45 @@ import streamlit as st
 from PIL import Image
 # Note: OpenCV (cv2) is optional. Remove the import to avoid deployment issues unless you add
 # `opencv-python` to your `requirements.txt` and your deployment environment supports it.
+import base64
+import os
 
 # Display logo (centered and resized to one-quarter of original dimensions)
+def _set_background_glass(img_path: str = "ugb1.png"):
+    """Set a full-page background using the given image and add a translucent glass
+    style to the main Streamlit block container so content appears on a frosted panel.
+    The image is embedded as a data URI to improve compatibility when deployed.
+    """
+    try:
+        if not os.path.exists(img_path):
+            return
+        with open(img_path, "rb") as f:
+            data = f.read()
+        b64 = base64.b64encode(data).decode()
+        css = f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{b64}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        .stApp .main .block-container {{
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+        }}
+        </style>
+        """
+        st.markdown(css, unsafe_allow_html=True)
+    except Exception:
+        # If embedding fails, don't break the app
+        pass
+
+# Apply the background/glass style
+_set_background_glass("ugb1.png")
 try:
     _logo = Image.open("ugb1.png")
     _w, _h = _logo.size
