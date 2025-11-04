@@ -49,12 +49,9 @@ try:
     _new_w = max(1, _w // 4)
     _new_h = max(1, _h // 4)
     _logo_small = _logo.resize((_new_w, _new_h), Image.LANCZOS)
-    # center the image using three columns and put image in the middle
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
-
-        # Custom CSS for dark card layout
-        st.markdown("""
+    # Add the logo and title directly without centering
+    # Custom CSS for dark card layout
+    st.markdown("""
         <style>
         .dark-card {
             background: rgba(23, 23, 35, 0.92);
@@ -93,12 +90,12 @@ try:
         </style>
         """, unsafe_allow_html=True)
 
-        # Create columns for logo and title
-        logo_col, title_col = st.columns([1, 4])
-        with logo_col:
-            st.image(_logo_small, use_column_width=True)
-        with title_col:
-            st.markdown("<h1 style='margin: 1rem 0 0.1rem 0;'>Birds in Uganda</h1>", unsafe_allow_html=True)
+    # Create columns for logo and title
+    logo_col, title_col = st.columns([1, 4])
+    with logo_col:
+        st.image(_logo_small, use_column_width=False)
+    with title_col:
+        st.markdown("<h1 style='margin: 1rem 0 0.1rem 1rem;'>Birds in Uganda</h1>", unsafe_allow_html=True)
 except Exception:
     # If logo not found or cannot be opened, skip silently
     pass
@@ -108,14 +105,6 @@ st.markdown("<p style='text-align: center;'><em>Upload any bird image you'd like
 
 st.markdown("""
 <style>
-.black-container {
-    background: rgba(0, 0, 0, 0.85);
-    border-radius: 15px;
-    padding: 2rem;
-    margin: 1rem 0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    color: white;
-}
 .input-section {
     background: rgba(255,255,255,0.98);
     border-radius: 10px;
@@ -143,9 +132,6 @@ st.markdown("""
 
 # Main content container with modern layout
 with st.container():
-    # Add black container wrapper
-    st.markdown('<div class="black-container">', unsafe_allow_html=True)
-    
     # Instructions
     st.markdown("""
     <div style='text-align:center; margin-bottom: 1rem;'>
@@ -202,5 +188,4 @@ with st.container():
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Close the black container
-    st.markdown('</div>', unsafe_allow_html=True)
+    # (no wrapper divs to close)
