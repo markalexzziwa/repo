@@ -151,9 +151,6 @@ with st.container():
         st.markdown("""
         <div style='text-align: center; margin-bottom: 1rem;'>
             <h3 style='font-size: 1.2rem; color: #1f2937;'>Upload from Device</h3>
-            <p style='color: #4b5563; font-size: 0.9rem;'>
-                Choose a bird image from your device to get started with identification
-            </p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -162,15 +159,13 @@ with st.container():
         <div style='text-align: center; margin-bottom: 1rem;'>
             <h3 style='font-size: 1.2rem; color: #1f2937;'>Take a Photo</h3>
             <p style='color: #4b5563; font-size: 0.9rem;'>
-                Use your camera to capture and identify birds in real-time
+                Use your camera to capture and identify birds using camera
             </p>
         </div>
         """, unsafe_allow_html=True)
     
     # Upload section with modern styling
     with col1:
-        st.markdown('<div class="input-section">', unsafe_allow_html=True)
-        st.markdown('<p class="section-title">📁 Upload Image</p>', unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Select a bird image", type=['png', 'jpg', 'jpeg'])
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
