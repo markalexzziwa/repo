@@ -146,6 +146,27 @@ with st.container():
     # Create two columns with equal width (input sections inside simple white cards)
     col1, col2 = st.columns(2)
     
+    # Add descriptive text for each column
+    with col1:
+        st.markdown("""
+        <div style='text-align: center; margin-bottom: 1rem;'>
+            <h3 style='font-size: 1.2rem; color: #1f2937;'>Upload from Device</h3>
+            <p style='color: #4b5563; font-size: 0.9rem;'>
+                Choose a bird image from your device to get started with identification
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style='text-align: center; margin-bottom: 1rem;'>
+            <h3 style='font-size: 1.2rem; color: #1f2937;'>Take a Photo</h3>
+            <p style='color: #4b5563; font-size: 0.9rem;'>
+                Use your camera to capture and identify birds in real-time
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
     # Upload section with modern styling
     with col1:
         st.markdown('<div class="input-section">', unsafe_allow_html=True)
