@@ -63,38 +63,85 @@ st.markdown("<h1 style='text-align: center; margin-bottom: 0.1rem;'>Birds in Uga
 # Centered welcome message (italic)
 st.markdown("<p style='text-align: center;'><em>Upload any bird image you'd like to learn more about it. Discover more about the birds of Uganda!</em></p>", unsafe_allow_html=True)
 
-# Create a box container
+# Add custom CSS for modern components
+st.markdown("""
+<style>
+.upload-section, .camera-section {
+    background: rgba(255,255,255,0.8);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.section-title {
+    color: #1E1E1E;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+.stButton > button {
+    width: 100%;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    background: #2E86C1;
+    color: white;
+    border: none;
+    margin: 0.5rem 0;
+}
+.stButton > button:hover {
+    background: #21618C;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Main content container with modern layout
 with st.container():
-    st.write("Choose how you want to input the bird image:")
+    # Instructions with modern styling
+    st.markdown("""
+    <div style='background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 10px; margin-bottom: 2rem;'>
+        <p style='text-align: center; color: #666; margin: 0;'>
+            Choose one of the options below to identify a bird
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Create two columns for the options
+    # Create two columns with equal width
     col1, col2 = st.columns(2)
     
-    # First column - Upload image option
+    # Upload section with modern styling
     with col1:
-        st.write("📁 Browse Image")
-        uploaded_file = st.file_uploader("Choose an image...", type=['png', 'jpg', 'jpeg'])
+        st.markdown('<div class="upload-section">', unsafe_allow_html=True)
+        st.markdown('<p class="section-title">📁 Upload Image</p>', unsafe_allow_html=True)
+        uploaded_file = st.file_uploader("Select a bird image", type=['png', 'jpg', 'jpeg'])
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption='Uploaded Image', use_column_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    # Second column - Camera option
+    # Camera section with modern styling
     with col2:
-        st.write("📷 Capture Image")
-
-        # Use a button to activate the camera. Persist the state so the camera stays active
+        st.markdown('<div class="camera-section">', unsafe_allow_html=True)
+        st.markdown('<p class="section-title">📷 Capture Image</p>', unsafe_allow_html=True)
+        
+        # Camera activation state
         if 'camera_active' not in st.session_state:
             st.session_state.camera_active = False
 
-        if st.button("Use camera 📷", key="use_camera_button"):
-            st.session_state.camera_active = True
-
+        # Camera controls
+        if not st.session_state.camera_active:
+            if st.button("Start Camera 📷", key="use_camera_button"):
+                st.session_state.camera_active = True
+        
         if st.session_state.camera_active:
             camera_photo = st.camera_input("Take a photo", key="camera_input")
             if camera_photo is not None:
                 image = Image.open(camera_photo)
-                st.image(image, caption='Captured Image', use_column_width=True)
-
-            # Provide a stop button to close the camera preview
-            if st.button("Stop camera", key="stop_camera_button"):
+                st.image(image, caption='Captured Photo', use_column_width=True)
+            
+            if st.button("Stop Camera ⏹️", key="stop_camera_button", help="Click to stop camera preview"):
                 st.session_state.camera_active = False
+        
+        st.markdown('</div>', unsafe_allow_html=True)
