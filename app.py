@@ -148,7 +148,8 @@ with st.container():
     # Upload section with modern styling
     
     with col1:
-        uploaded_file = st.file_uploader("<h4 style='margin-bottom:0.5rem; color:black;'>📁 Select a bird image", type=['png', 'jpg', 'jpeg'])
+        st.markdown("<h4 style='margin-bottom:0.5rem; color:#1f2937;'>📁 Upload Image</h4>", unsafe_allow_html=True)
+        uploaded_file = st.file_uploader("Select a bird image", type=['png', 'jpg', 'jpeg'])
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption='Uploaded Image', use_column_width=True)
@@ -159,7 +160,7 @@ with st.container():
             st.session_state.camera_active = False
 
         # Camera controls
-        st.markdown("<h4 style='margin-bottom:0.5rem; color:black;'>📷 Take Picture</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='margin-bottom:0.5rem; color:#1f2937;'>📷 Take Picture</h4>", unsafe_allow_html=True)
         if not st.session_state.camera_active:
             if st.button("Start Camera 📷", key="use_camera_button"):
                 st.session_state.camera_active = True
