@@ -95,7 +95,7 @@ try:
     with logo_col:
         st.image(_logo_small, use_column_width=False)
     with title_col:
-        st.markdown("<h1 style='margin: 1rem 0 0.1rem 1rem; font-size: 7rem;'>Birds in Uganda</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='margin: 1rem 0 0.1rem 1rem; font-size: 3rem;'>Birds in Uganda</h1>", unsafe_allow_html=True)
 except Exception:
     # If logo not found or cannot be opened, skip silently
     pass
@@ -134,8 +134,8 @@ st.markdown("""
 with st.container():
     # Instructions
     st.markdown("""
-    <div style='text-align:center; margin-bottom: 1rem;'>
-        <p style='color: #374151; margin: 0; font-weight: 400; font-size: 1.05rem;'>
+        <div style='text-align:center; margin-bottom: 3rem; border-top: 4px solid rgba(34,197,94,0.9); padding-top: 1.5rem;'>
+            <p style='color: rgba(34,197,94,0.9); margin: 0; font-weight: 500; font-size: 1.05rem;'>
             Choose one of the options below to identify a bird
         </p>
     </div>
@@ -163,6 +163,7 @@ with st.container():
     col1, col2 = st.columns(2)
     
     # Upload section with modern styling
+    
     with col1:
         uploaded_file = st.file_uploader("Select a bird image", type=['png', 'jpg', 'jpeg'])
         if uploaded_file is not None:
