@@ -153,6 +153,8 @@ with st.container():
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption='Uploaded Image', use_column_width=True)
+            # Show Identify Specie button below the image
+            st.button("Identify Specie", key="identify_specie_button")
     
     # Camera section with modern styling
     with col2:
@@ -200,6 +202,8 @@ with st.container():
             if camera_photo is not None:
                 image = Image.open(camera_photo)
                 st.image(image, caption='Captured Photo', use_column_width=True)
+                # Show Identify Specie button below the captured photo
+                st.button("Identify Specie", key="identify_specie_camera_button")
             
             if st.button("Stop Camera ⏹️", key="stop_camera_button", help="Click to stop camera preview"):
                 st.session_state.camera_active = False
