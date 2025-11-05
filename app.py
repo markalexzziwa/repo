@@ -4,6 +4,7 @@ from PIL import Image
 # `opencv-python` to your `requirements.txt` and your deployment environment supports it.
 import base64
 import os
+from predict import load_model_and_labels, predict_species
 
 # Display logo (centered and resized to one-quarter of original dimensions)
 def _set_background_glass(img_path: str = "ugb1.png"):
@@ -150,12 +151,16 @@ with st.container():
     with col1:
         st.markdown("<h4 style='margin-bottom:0.5rem; color:#1f2937;'>📁 Upload Image</h4>", unsafe_allow_html=True)
         uploaded_file = st.file_uploader("Select a bird image", type=['png', 'jpg', 'jpeg'])
+        # Load model and label map once
+        model, label_map = load_model_and_labels()
+
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption='Uploaded Image', use_column_width=True)
-            # Show Identify Specie button below the image
-            st.button("Identify Specie", key="identify_specie_button")
-    
+
+        if st.button("Identify Specie", key="identify_specie_button"):
+            species = predict_species(image, model, label_map)
+            st.success(f"✅ This bird is likely a **{species}**.")
     # Camera section with modern styling
     with col2:
         if 'camera_active' not in st.session_state:
@@ -204,6 +209,7 @@ with st.container():
                 st.image(image, caption='Captured Photo', use_column_width=True)
                 # Show Identify Specie button below the captured photo
                 st.button("Identify Specie", key="identify_specie_camera_button")
+                
             
             if st.button("Stop Camera ⏹️", key="stop_camera_button", help="Click to stop camera preview"):
                 st.session_state.camera_active = False
